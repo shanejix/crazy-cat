@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Shanejix's Crazy Cat">
+  <meta name="keywords" content="Shanejix">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" media="screen" href="./css/normalize.css">
+  <title>Shanejix's Crazy Cat</title>
+</head>
+
+<body>
+  <div class="title">Surround it !</div>
+  <div id="content" class="content">
+    <div class="info">
+      <span class="info-steps">
+        Steps:&nbsp;<span id="steps"></span>
+      </span>
+      <span class="info-minsteps">
+        Min-Steps:&nbsp;<span id="minSteps"></span>
+      </span>
+    </div>
+    <canvas id="canvas">
+      对不起！您的浏览器不支持Canvas，请使用chrome浏览器打开！
+    </canvas>
+  </div>
+  <div class="footer">
+    <div class="footer-link">
+      <a href="todo" target="_blank">
+        <i class="fa fa-heart" aria-hidden="true"></i>
+      </a>
+    </div>
+    <div class="copyright">
+      © 2020 -
+      <script>
+        document.write(new Date().getFullYear());
+      </script>
+      Shanejix
+    </div>
+  </div>
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>

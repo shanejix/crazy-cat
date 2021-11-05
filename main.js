@@ -3,7 +3,92 @@ import './index.less'
 (function () {
 
   /**
-   * Game class
+   * Grid constructor
+   * @param {*} gridRow 
+   * @param {*} gridCol 
+   * @param {*} type 
+   * @param {*} isWalkable 
+   */
+  function Grid(gridRow, gridCol, type, isWalkable) {
+    this.gridRow = gridRow;
+    this.gridCol = gridCol
+    this.gridType = type;
+    this.isWalkable = isWalkable;
+  }
+
+  Grid.prototype.gridColor = ["#B5B5B5", "#FF845E", "#CCFF00"];
+  Grid.prototype.gridRadius = 24;
+  Grid.prototype.gridGap = 6;
+
+  /**
+   * draw grid in canvas
+   * @param {*} game 
+   * @param {*} context 
+   */
+  Grid.prototype.drawGrid = function (game, context) {
+    context.beginPath();
+    context.arc(
+      this.getGridPosition(game).gridPositionX,
+      this.getGridPosition(game).gridPositionY,
+      this.gridRadius,
+      0,
+      Math.PI * 2,
+      true
+    );
+    context.fillStyle = this.gridColor[this.gridType];
+    context.fill();
+    context.closePath();
+  };
+
+  /**
+   * get grid position by game instanc
+   * @param {*} game 
+   * @returns 
+   */
+  Grid.prototype.getGridPosition = function (game) {
+    const gridPosition = {};
+
+    if (this.gridRow % 2 === 0) {
+      gridPosition.gridPositionX = this.gridRadius * 6 / 4
+        + this.gridCol * (this.gridRadius * 2 + this.gridGap);
+
+      gridPosition.gridPositionY = this.gridRadius
+        + this.gridRow * (this.gridRadius * 2 + this.gridGap);
+    } else {
+      gridPosition.gridPositionX = game.gameCanvasWidth
+        - (this.gridRadius * 6 / 4
+          + (game.gameGridColCount - 1 - this.gridCol) * (this.gridRadius * 2 + this.gridGap)
+        );
+
+      gridPosition.gridPositionY = this.gridRadius
+        + this.gridRow * (this.gridRadius * 2 + this.gridGap);
+    }
+
+    return gridPosition
+  }
+
+  /**
+   * Cat constructor
+   * @param {*} x 
+   * @param {*} y 
+   */
+  function Cat(x, y) {
+    this.catX = x;
+    this.catY = y
+  }
+
+  /**
+   * Barrier constructor
+   * @param {*} x 
+   * @param {*} y 
+   */
+  function Barrier(x, y) {
+    this.barrierX = x;
+    this.barrierY = y;
+  }
+
+  /**
+   * Game constructor
    * @param {*} gameStart 
    * @param {*} gameSteps 
    * @param {*} gameMinSteps 
@@ -24,7 +109,7 @@ import './index.less'
    * set game min steps
    * @param {*} gameMinSteps 
    */
-  Game.prototype.setGameMinSteps = (gameMinSteps) => {
+  Game.prototype.setGameMinSteps = function (gameMinSteps) {
     document.getElementById('minSteps').innerHTML = gameMinSteps
   }
 
@@ -32,7 +117,7 @@ import './index.less'
    * set game current steps
    * @param {*} gameSteps 
    */
-  Game.prototype.setGameSteps = (gameSteps) => {
+  Game.prototype.setGameSteps = function (gameSteps) {
     document.getElementById('steps').innerHTML = gameSteps
   }
 
@@ -40,7 +125,7 @@ import './index.less'
    * get game gird's radius and gap
    * @returns 
    */
-  Game.prototype.getGameGridsData = () => {
+  Game.prototype.getGameGridData = function () {
     const gridData = {};
 
     // according current client widtn,daynamic accument game grad's radus and gap
@@ -70,12 +155,17 @@ import './index.less'
    * set game canvas size
    */
   Game.prototype.setGameCanvasSize = function () {
-    const gridsData = this.getGameGridsData()
+    const gridData = this.getGameGridData()
 
     // adapt canvas width 
-    this.gameCanvasWidth = gridsData.gridRadius * 2 * this.gameGridsRowCount + gridsData.gridGap * (this.gameGridsRowCount - 1)
+    this.gameCanvasWidth = gridData.gridRadius * 2 * this.gameGridsRowCount
+      + gridData.gridGap * (this.gameGridsRowCount - 1)
+      + gridData.gridRadius * 2
+      + gridData.gridGap / 2
+
     // adapt canvas height
-    this.gameCanvasHeight = gridsData.gridRadius * 2 * this.gameGridsColCount + gridsData.gridGap * (this.gameGridsColCount - 1)
+    this.gameCanvasHeight = gridData.gridRadius * 2 * this.gameGridsColCount
+      + gridData.gridGap * (this.gameGridsColCount - 1)
 
     // set canvas wight
     document.getElementById('canvas').setAttribute('width', this.gameCanvasWidth);
@@ -84,25 +174,137 @@ import './index.less'
   }
 
   /**
+   * init crazy cat
+   */
+  Game.prototype.initGameCat = function () {
+    const catPosX = (game.gameGridsColCount - 1) / 2;
+    const catPosY = (game.gameGridsRowCount - 1) / 2;
+
+    return new Cat(catPosX, catPosY);
+  }
+
+  /**
+   * init game barriers
+   */
+  Game.prototype.initGameBarriers = function () {
+    const gameBarriers = [];
+
+    const x = [];
+    const y = [];
+
+    for (let i = 0; i < this.gameGridsRowCount; i++) {
+      x.push(i)
+    }
+
+    for (let j = 0; j < this.gameGridsColCount; j++) {
+      y.push(j)
+    }
+
+    for (let k = 0; k < this.gameBarriersCount; k++) {
+      let randomX = Math.floor(Math.random() * this.gameGridsRowCount);
+      let randomY = Math.floor(Math.random() * this.gameGridsColCount);
+
+      while (x[randomX] === -1 && y[randomY] === -1) {
+        randomX = Math.floor(Math.random() * this.gameGridsRowCount);
+        randomY = Math.floor(Math.random() * this.gameGridsColCount);
+      }
+
+      gameBarriers.push(new Barrier(randomX, randomY));
+
+      x[randomX] = -1
+      y[randomY] = -1
+    }
+
+    return gameBarriers
+  }
+
+  /**
+   * init game grids
+   * @param {*} gridData 
+   * @param {*} gameBarriers 
+   * @param {*} cat 
+   */
+  Game.prototype.initGameGrids = function (gridData, gameBarriers, cat) {
+    const gameGrids = [];
+
+    let grid
+    let gridType
+    let isWalkable
+
+    let game = this;
+
+    for (let i = 0; i < this.gameGridsRowCount; i++) {
+
+      gameGrids[i] = [];
+
+      for (let j = 0; j < this.gameGridsColCount; j++) {
+        gridType = 0;
+        isWalkable = true;
+
+        for (let k = 0; k < gameBarriers.length; k++) {
+          const currentBarrier = gameBarriers[k];
+          if (currentBarrier.barrierX === i && currentBarrier.barrierY === j) {
+            gridType = 1
+            isWalkable = false
+            break;
+          }
+        }
+
+        if (cat.catX === i && cat.catY === j) {
+          gridType = 2
+          isWalkable = false
+        }
+
+        grid = new Grid(i, j, gridType, isWalkable);
+
+        grid.gridRadius = gridData.gridRadius;
+        grid.gridGap = gridData.gridGap;
+
+        grid.drawGrid(game, context);
+
+        gameGrids[i][j] = grid;
+      }
+    }
+
+    return gameGrids
+  }
+
+  // game global init config
+
+  const convas = document.getElementById('canvas');
+  const context = canvas.getContext('2d');
+
+  // game intance
+  let game
+  // game grid collection
+  let gameGrids = [];
+  // cat instance
+  let cat
+  // record node visited
+  let isVisited
+  // record node depth
+  let searchDepth
+
+  /**
    * initinal game
    */
-  const initGame = () => {
+  const initGame = function () {
     // init game instance
-    const game = new Game(true, 0, 0)
+    game = new Game(true, 0, 0)
 
     game.setGameMinSteps(game.gameMinSteps);
     game.setGameSteps(game.gameSteps);
     game.setGameCanvasSize();
 
     // init cat instance
-    // const cat = game.initGameCat();
+    cat = game.initGameCat();
 
     // init grids instance
-    // const gameGrids = game.initGameGrids(
-    //   game.getGameGridsData(),
-    //   game.initGameBarriers(),
-    //   cat
-    // );
+    gameGrids = game.initGameGrids(
+      game.getGameGridData(),
+      game.initGameBarriers(),
+      cat
+    );
   }
 
   // init game

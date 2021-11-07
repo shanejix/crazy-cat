@@ -57,7 +57,7 @@ import './index.less'
     } else {
       gridPosition.gridPositionX = game.gameCanvasWidth
         - (this.gridRadius * 6 / 4
-          + (game.gameGridColCount - 1 - this.gridCol) * (this.gridRadius * 2 + this.gridGap)
+          + (game.gameGridsColCount - 1 - this.gridCol) * (this.gridRadius * 2 + this.gridGap)
         );
 
       gridPosition.gridPositionY = this.gridRadius

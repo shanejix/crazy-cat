@@ -271,7 +271,7 @@ import './index.less'
 
   // game global init config
 
-  const convas = document.getElementById('canvas');
+  const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
 
   // game intance

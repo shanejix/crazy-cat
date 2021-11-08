@@ -41,7 +41,7 @@ import './index.less'
   };
 
   /**
-   * get grid position by game instanc
+   * get grid position by row and col
    * @param {*} game 
    * @returns 
    */
@@ -300,6 +300,61 @@ import './index.less'
   let isVisited
   // record node depth
   let searchDepth
+
+  /**
+ * judge click target point is in path
+ * @param {*} x 
+ * @param {*} y 
+ * @param {*} grid 
+ * @returns 
+ */
+  function isInPath(x, y, grid) {
+
+    context.beginPath();
+    context.arc(
+      grid.getGridPosition(game).gridPositionX,
+      grid.getGridPosition(game).gridPositionY,
+      grid.gridRadius,
+      0,
+      Math.PI * 2,
+      true
+    );
+    context.closePath();
+
+    return context.isPointInPath(x, y)
+  }
+
+  /**
+   * change game gird to girrer
+   * @param {*} x 
+   * @param {*} y 
+   * @param {*} type 
+   * @param {*} isWalkable 
+   */
+  function updateGameGird(x, y, type, isWalkable) {
+    gameGrids[x][y].gridType = type;
+    gameGrids[x][y].drawGrid(game, context)
+    gameGrids[x][y].isWalkable = isWalkable;
+  }
+
+  canvas.addEventListener(
+    'click',
+    function (e) {
+      for (let i = 0; i < game.gameGridsRowCount; i++) {
+        for (let j = 0; j < game.gameGridsColCount; j++) {
+          if (isInPath(e.offsetX, e.offsetY, gameGrids[i][j])) {
+            if (gameGrids[i][j].gridType === 0) {
+              // change grid to girrier
+              updateGameGird(i, j, 1, false);
+            }
+          }
+        }
+      }
+    },
+    false
+  )
+
+
 
   /**
    * initinal game

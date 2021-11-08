@@ -48,19 +48,26 @@ import './index.less'
   Grid.prototype.getGridPosition = function (game) {
     const gridPosition = {};
 
+    // even row from left to right to draw 
     if (this.gridRow % 2 === 0) {
-      gridPosition.gridPositionX = this.gridRadius * 6 / 4
+      gridPosition.gridPositionX =
+        + this.gridRadius * 3 / 2 // + 1/2 girdRadius offset
         + this.gridCol * (this.gridRadius * 2 + this.gridGap);
 
-      gridPosition.gridPositionY = this.gridRadius
+      gridPosition.gridPositionY =
+        + this.gridRadius
         + this.gridRow * (this.gridRadius * 2 + this.gridGap);
     } else {
-      gridPosition.gridPositionX = game.gameCanvasWidth
-        - (this.gridRadius * 6 / 4
+      // ood row from l right to left to draw 
+      gridPosition.gridPositionX =
+        + game.gameCanvasWidth
+        - (
+          + this.gridRadius * 3 / 2 // + 1/2 girdRadius offset
           + (game.gameGridsColCount - 1 - this.gridCol) * (this.gridRadius * 2 + this.gridGap)
         );
 
-      gridPosition.gridPositionY = this.gridRadius
+      gridPosition.gridPositionY =
+        + this.gridRadius
         + this.gridRow * (this.gridRadius * 2 + this.gridGap);
     }
 
@@ -99,7 +106,7 @@ import './index.less'
     this.gameMinSteps = gameMinSteps;
   }
 
-  Game.prototype.gameGridsRowCount = 9
+  Game.prototype.gameGridsRowCount = 9;
   Game.prototype.gameGridsColCount = 9;
   Game.prototype.gameCanvasWidth = 0;
   Game.prototype.gameCanvasHeight = 0;
@@ -158,14 +165,16 @@ import './index.less'
     const gridData = this.getGameGridData()
 
     // adapt canvas width 
-    this.gameCanvasWidth = gridData.gridRadius * 2 * this.gameGridsRowCount
-      + gridData.gridGap * (this.gameGridsRowCount - 1)
+    this.gameCanvasWidth =
+      + gridData.gridRadius * 2 * this.gameGridsColCount
+      + gridData.gridGap * (this.gameGridsColCount - 1)
       + gridData.gridRadius * 2
-      + gridData.gridGap / 2
+    // + gridData.gridGap / 2
 
     // adapt canvas height
-    this.gameCanvasHeight = gridData.gridRadius * 2 * this.gameGridsColCount
-      + gridData.gridGap * (this.gameGridsColCount - 1)
+    this.gameCanvasHeight =
+      + gridData.gridRadius * 2 * this.gameGridsRowCount
+      + gridData.gridGap * (this.gameGridsRowCount - 1)
 
     // set canvas wight
     document.getElementById('canvas').setAttribute('width', this.gameCanvasWidth);
@@ -204,7 +213,7 @@ import './index.less'
       let randomX = Math.floor(Math.random() * this.gameGridsRowCount);
       let randomY = Math.floor(Math.random() * this.gameGridsColCount);
 
-      while (x[randomX] === -1 && y[randomY] === -1) {
+      while ((x[randomX] === -1 && y[randomY] === -1) || (randomX === 4 && randomY === 4)) {
         randomX = Math.floor(Math.random() * this.gameGridsRowCount);
         randomY = Math.floor(Math.random() * this.gameGridsColCount);
       }
@@ -235,12 +244,15 @@ import './index.less'
 
     for (let i = 0; i < this.gameGridsRowCount; i++) {
 
+      // i row
       gameGrids[i] = [];
 
       for (let j = 0; j < this.gameGridsColCount; j++) {
+        // initila gird config
         gridType = 0;
         isWalkable = true;
 
+        // find barriers in Game intance
         for (let k = 0; k < gameBarriers.length; k++) {
           const currentBarrier = gameBarriers[k];
           if (currentBarrier.barrierX === i && currentBarrier.barrierY === j) {
@@ -250,18 +262,22 @@ import './index.less'
           }
         }
 
+        // find cat in Game instance
         if (cat.catX === i && cat.catY === j) {
           gridType = 2
           isWalkable = false
         }
 
+        // generate game grid in Game instance
         grid = new Grid(i, j, gridType, isWalkable);
 
         grid.gridRadius = gridData.gridRadius;
         grid.gridGap = gridData.gridGap;
 
+        // draw game grid in Game instance
         grid.drawGrid(game, context);
 
+        // load game grid 
         gameGrids[i][j] = grid;
       }
     }

@@ -325,16 +325,23 @@ import './index.less'
   }
 
   /**
-   * change game gird to girrer
+   * update game grid view
    * @param {*} x 
    * @param {*} y 
    * @param {*} type 
    * @param {*} isWalkable 
    */
-  function updateGameGird(x, y, type, isWalkable) {
+  function updateGameGirdsView(x, y, type, isWalkable) {
     gameGrids[x][y].gridType = type;
     gameGrids[x][y].drawGrid(game, context)
     gameGrids[x][y].isWalkable = isWalkable;
+  }
+
+  /**
+   * move crazy cat
+   */
+  function moveCat() {
+
   }
 
   canvas.addEventListener(
@@ -345,7 +352,13 @@ import './index.less'
           if (isInPath(e.offsetX, e.offsetY, gameGrids[i][j])) {
             if (gameGrids[i][j].gridType === 0) {
               // change grid to girrier
-              updateGameGird(i, j, 1, false);
+              updateGameGirdsView(i, j, 1, false);
+
+              // move cat
+              moveCat();
+
+              game.gameSteps++;
+              game.setGameSteps(game.gameSteps);
             }
           }
         }
@@ -353,8 +366,6 @@ import './index.less'
     },
     false
   )
-
-
 
   /**
    * initinal game

@@ -331,10 +331,175 @@ import './index.less'
    * @param {*} type 
    * @param {*} isWalkable 
    */
-  function updateGameGirdsView(x, y, type, isWalkable) {
+  function updateGameGirdView(x, y, type, isWalkable) {
     gameGrids[x][y].gridType = type;
     gameGrids[x][y].drawGrid(game, context)
     gameGrids[x][y].isWalkable = isWalkable;
+  }
+
+  function clearGameGridView(girdRow, gridCol, gridType, isWalkable) {
+    var grid = new Grid(girdRow, gridCol, gridType, isWalkable);
+
+    grid.gridRadius = game.getGameGridData().gridRadius;
+    grid.gridGap = game.getGameGridData().gridGap;
+
+    context.clearRect(
+      grid.getGridPosition(game).gridPositionX - grid.gridRadius,
+      grid.getGridPosition(game).gridPositionY - grid.gridRadius,
+      grid.gridRadius * 2,
+      grid.gridRadius * 2
+    );
+  }
+
+  /**
+   * reset grids visited
+   */
+  function resetGridVisited() {
+    isVisited = [];
+    for (var i = 0; i < game.gameGridsRowCount; i++) {
+      isVisited[i] = [];
+      for (var j = 0; j < game.gameGridsColCount; j++) {
+        isVisited[i][j] = false;
+      }
+    }
+  }
+
+  /**
+   * reset grids depth
+   */
+  function resetGridDepth() {
+    for (var i = 0; i < game.gameGridsRowCount; i++) {
+      for (var j = 0; j < game.gameGridsColCount; j++) {
+        if (gameGrids[i][j].isWalkable) {
+          gameGrids[i][j].searchDepth = 1;
+        }
+      }
+    }
+  }
+
+  /**
+  * find current cat surround available grids
+  * @param {*} depth 
+  * @param {*} catGrid 
+  * @returns 
+  */
+  function getSurroundGrids(depth, catGrid) {
+    const surroundGrids = [];
+
+    // even row surround girds relative position
+    const evenRowSurroundGridsRelaPos = [
+      [-1, -1], [-1, 0],
+      [0, -1], [0, 1],
+      [1, -1], [1, 0]
+    ];
+    const oddRowSurroundGridsRelaPos = [
+      [-1, 0], [-1, 1],
+      [0, -1], [0, 1],
+      [1, 0], [1, 1]
+    ];
+
+    let rowSurroundGrids = [];
+
+    if (catGrid.gridRow % 2 === 0) {
+      // even row
+      rowSurroundGrids = evenRowSurroundGridsRelaPos
+    } else {
+      // odd row
+      rowSurroundGrids = oddRowSurroundGridsRelaPos
+    }
+
+    // loop surrpund grids
+    for (let i = 0; i < rowSurroundGrids.length; i++) {
+      const row = rowSurroundGrids[i][0];
+      const col = rowSurroundGrids[i][1];
+
+      if (gameGrids[catGrid.gridRow + row][catGrid.gridCol + col].isWalkable) {
+        if (!isVisited[catGrid.gridRow + row][catGrid.gridCol + col]) {
+          gameGrids[catGrid.gridRow + row][catGrid.gridCol + col].searchDepth = depth + 1;
+        }
+        surroundGrids.push(gameGrids[catGrid.gridRow + row][catGrid.gridCol + col]);
+      }
+    }
+
+    return surroundGrids
+  }
+
+  /**
+   * get current girds surrands search results
+   * @param {*} surroundGrids 
+   * @returns 
+   */
+  function getSurrGridsSearchResults(surroundGrids) {
+    const results = [];
+
+    for (let i = 0; i < surroundGrids.length; i++) {
+
+      if (breadthFirstSearchPath(surroundGrids[i])) {
+        results.push({
+          gridDepth: searchDepth,
+          grid: surroundGrids[i]
+        });
+
+        resetGridVisited();
+        resetGridDepth();
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * judge search edge
+   * @param {*} grid 
+   * @returns 
+   */
+  function isSearchEnd(grid) {
+    if (
+      grid.gridRow == 0 ||
+      grid.gridRow == game.gameGridRowCount - 1 ||
+      grid.gridCol == 0 ||
+      grid.gridCol == game.gameGridColCount - 1
+    ) {
+      return true;
+    }
+  }
+
+  /**
+   * BFS
+   * @param {*} grid 
+   * @returns 
+   */
+  function breadthFirstSearchPath(grid) {
+    if (isSearchEnd(grid)) {
+      searchDepth = grid.searchDepth;
+      return true;
+    }
+
+    const queue = [];
+
+    queue.push(grid);
+    isVisited[grid.gridRow][grid.gridCol] = true;
+
+    while (queue.length) {
+      const front = queue.shift();
+
+      const frontSurroundGrids = getSurroundGrids(front.searchDepth, front);
+
+      // loop surround
+      for (let i = 0; i < frontSurroundGrids.length; i++) {
+        const currSurroundGrid = frontSurroundGrids[i];
+
+        if (isSearchEnd(currSurroundGrid)) {
+          searchDepth = currSurroundGrid.searchDepth
+          return true
+        }
+
+        if (!isVisited[currSurroundGrid.gridRow][currSurroundGrid.gridCol]) {
+          queue.push(currSurroundGrid);
+          isVisited[currSurroundGrid.gridRow][currSurroundGrid.gridCol] = true
+        }
+      }
+    }
   }
 
   /**
@@ -342,8 +507,95 @@ import './index.less'
    */
   function moveCat() {
 
+    // find current cat surround available grids
+    const surroundGrids = getSurroundGrids(searchDepth, gameGrids[cat.catX][cat.catY])
+
+    // console.log('surroundGrids', surroundGrids);
+
+    // get surround grids search results
+    var surrGridsSearchResult = getSurrGridsSearchResults(surroundGrids);
+
+    console.log('surrGridsSearchResult', surroundGrids, surrGridsSearchResult)
+
+    if (surrGridsSearchResult.length !== 0) {
+      var moveGrids = [];
+
+      // loop for min girdDepth
+      for (var i = 0; i < surrGridsSearchResult.length; i++) {
+        if (surrGridsSearchResult[i].gridDepth === sortSearchDepth(surrGridsSearchResult)) {
+          moveGrids.push(surrGridsSearchResult[i].grid);
+        }
+      }
+
+      const randomMoveGrid = moveGrids[Math.floor(Math.random() * moveGrids.length)];
+
+      clearGameGridView(cat.catX, cat.catY, 2, false);
+
+      updateGameGirdView(cat.catX, cat.catY, 0, true);
+
+      cat.catX = randomMoveGrid.gridRow;
+      cat.catY = randomMoveGrid.gridCol;
+
+      updateGameGirdView(cat.catX, cat.catY, 2, false);
+
+      isGameLose()
+
+    } else {
+      isGameWin()
+    }
   }
 
+  /**
+   * bubble sort gird resutl
+   * @param {*} gridsSearchResult 
+   * @returns 
+   */
+  function sortSearchDepth(gridsSearchResult) {
+    var results = [];
+
+    for (let i = 0; i < gridsSearchResult.length; i++) {
+      results.push(gridsSearchResult[i].gridDepth);
+    }
+
+    for (var i = 0; i < results.length - 1; i++) {
+      for (var j = 0; j < results.length - 1 - i; j++) {
+        if (results[j] > results[j + 1]) {
+          var temp = results[j];
+          results[j] = results[j + 1];
+          results[j + 1] = temp;
+        }
+      }
+    }
+
+    return results[0];
+  }
+
+  /**
+   * is game win
+   */
+  function isGameWin() {
+    alert("You win！Steps：" + game.gameSteps);
+    document.location.reload();
+  }
+
+  /**
+   * is game lose
+   */
+  function isGameLose() {
+    if (
+      cat.catX == 0 ||
+      cat.catX == game.gameGridRowCount - 1 ||
+      cat.catY == 0 ||
+      cat.catY == game.gameGridColCount - 1
+    ) {
+      alert("You lose ! Please try again");
+      document.location.reload();
+    }
+  }
+
+  /**
+   * canvas event
+   */
   canvas.addEventListener(
     'click',
     function (e) {
@@ -351,8 +603,16 @@ import './index.less'
         for (let j = 0; j < game.gameGridsColCount; j++) {
           if (isInPath(e.offsetX, e.offsetY, gameGrids[i][j])) {
             if (gameGrids[i][j].gridType === 0) {
+
+              // clearGameGridView(i, j, 1, true);
+
               // change grid to girrier
-              updateGameGirdsView(i, j, 1, false);
+              updateGameGirdView(i, j, 1, false);
+
+              resetGridVisited();
+              resetGridDepth();
+
+              searchDepth = 0;
 
               // move cat
               moveCat();

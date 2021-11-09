@@ -337,8 +337,8 @@ import './index.less'
     gameGrids[x][y].isWalkable = isWalkable;
   }
 
-  function clearGameGridView(girdRow, gridCol, gridType, isWalkable) {
-    var grid = new Grid(girdRow, gridCol, gridType, isWalkable);
+  function clearGameGridView(gridRow, gridCol, gridType, isWalkable) {
+    var grid = new Grid(gridRow, gridCol, gridType, isWalkable);
 
     grid.gridRadius = game.getGameGridData().gridRadius;
     grid.gridGap = game.getGameGridData().gridGap;
@@ -439,7 +439,18 @@ import './index.less'
     const results = [];
 
     for (let i = 0; i < surroundGrids.length; i++) {
+      // DFS
+      // if (depthFirstSearchPath(surroundGrids[i], 0)) {
+      //   results.push({
+      //     gridDepth: searchDepth,
+      //     grid: surroundGrids[i]
+      //   });
 
+      //   resetGridVisited();
+      //   resetGridDepth();
+      // }
+
+      // BFS 
       if (breadthFirstSearchPath(surroundGrids[i])) {
         results.push({
           gridDepth: searchDepth,
@@ -468,6 +479,44 @@ import './index.less'
     ) {
       return true;
     }
+  }
+
+  /**
+   * DFS
+   * @param {*} grid 
+   * @param {*} depth 
+   */
+  function depthFirstSearchPath(grid, depth) {
+    if (isSearchEnd(grid)) {
+      searchDepth = depth;
+      return true;
+    }
+
+    // find current gird surround girds
+    const currSurroundGrids = getSurroundGrids(depth, grid);
+
+
+    // loop surround girds
+    for (let i = 0; i < currSurroundGrids.length; i++) {
+      const currSurroundGrid = currSurroundGrids[i];
+
+      if (
+        currSurroundGrid.gridRow < game.gameGridsRowCount &&
+        currSurroundGrid.gridCol < game.gameGridsColCount &&
+        !isVisited[currSurroundGrid.gridRow][currSurroundGrid.gridCol]
+      ) {
+        isVisited[currSurroundGrid.gridRow][currSurroundGrid.gridCol] = true;
+
+        if (depthFirstSearchPath(currSurroundGrid, depth + 1)) {
+          return true;
+        }
+
+        isVisited[currSurroundGrid.gridRow][currSurroundGrid.gridCol] = false;
+      }
+    }
+
+    return false;
+
   }
 
   /**

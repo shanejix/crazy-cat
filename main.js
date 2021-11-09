@@ -169,7 +169,7 @@ import './index.less'
       + gridData.gridRadius * 2 * this.gameGridsColCount
       + gridData.gridGap * (this.gameGridsColCount - 1)
       + gridData.gridRadius * 2
-    // + gridData.gridGap / 2
+      + gridData.gridGap / 2
 
     // adapt canvas height
     this.gameCanvasHeight =
@@ -413,7 +413,13 @@ import './index.less'
       const row = rowSurroundGrids[i][0];
       const col = rowSurroundGrids[i][1];
 
-      if (gameGrids[catGrid.gridRow + row][catGrid.gridCol + col].isWalkable) {
+      console.log(catGrid)
+
+      if (
+        catGrid.gridRow + row < game.gameGridsRowCount &&
+        catGrid.gridCol + col < game.gameGridsColCount &&
+        gameGrids[catGrid.gridRow + row][catGrid.gridCol + col].isWalkable
+      ) {
         if (!isVisited[catGrid.gridRow + row][catGrid.gridCol + col]) {
           gameGrids[catGrid.gridRow + row][catGrid.gridCol + col].searchDepth = depth + 1;
         }
@@ -574,7 +580,21 @@ import './index.less'
    * is game win
    */
   function isGameWin() {
+    const gameData = JSON.parse(window.localStorage.getItem("gameData"));
+
+    if (gameData !== null && gameData !== undefined) {
+      if (gameData.gameMinSteps > game.gameSteps) {
+        gameData.gameMinSteps = game.gameSteps;
+        window.localStorage.setItem("gameData", JSON.stringify(gameData));
+      }
+    } else {
+      const data = {};
+      data.gameMinSteps = game.gameSteps;
+      window.localStorage.setItem("gameData", JSON.stringify(data));
+    }
+
     alert("You win！Steps：" + game.gameSteps);
+
     document.location.reload();
   }
 
@@ -583,10 +603,10 @@ import './index.less'
    */
   function isGameLose() {
     if (
-      cat.catX == 0 ||
-      cat.catX == game.gameGridRowCount - 1 ||
-      cat.catY == 0 ||
-      cat.catY == game.gameGridColCount - 1
+      cat.catX === 0 ||
+      cat.catX === game.gameGridRowCount - 1 ||
+      cat.catY === 0 ||
+      cat.catY === game.gameGridColCount - 1
     ) {
       alert("You lose ! Please try again");
       document.location.reload();
@@ -604,7 +624,7 @@ import './index.less'
           if (isInPath(e.offsetX, e.offsetY, gameGrids[i][j])) {
             if (gameGrids[i][j].gridType === 0) {
 
-              // clearGameGridView(i, j, 1, true);
+              clearGameGridView(i, j, 1, true);
 
               // change grid to girrier
               updateGameGirdView(i, j, 1, false);
@@ -634,7 +654,14 @@ import './index.less'
     // init game instance
     game = new Game(true, 0, 0)
 
-    game.setGameMinSteps(game.gameMinSteps);
+    // cache
+    const gameData = JSON.parse(window.localStorage.getItem("gameData"));
+    if (gameData !== null && gameData !== undefined) {
+      game.setGameMinSteps(gameData.gameMinSteps);
+    } else {
+      game.setGameMinSteps(game.gameMinSteps);
+    }
+
     game.setGameSteps(game.gameSteps);
     game.setGameCanvasSize();
 

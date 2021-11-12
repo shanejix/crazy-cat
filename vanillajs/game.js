@@ -1,7 +1,4 @@
-import './index.less'
-
 (function () {
-
   /**
    * Grid constructor
    * @param {*} gridRow 

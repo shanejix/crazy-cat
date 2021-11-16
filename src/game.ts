@@ -75,11 +75,33 @@
 
       return gridPosition
     }
+
+    get gridColor() {
+      return ["#B5B5B5", "#FF845E", "#CCFF00"];
+    }
+
+    _redius = 24
+
+    get gridRadius() {
+      return this._redius;
+    }
+
+    set gridRadius(radius) {
+      this._redius = radius
+    }
+
+    _gridGap = 6
+
+    get gridGap() {
+      return this._gridGap;
+    }
+
+    set gridGap(gap) {
+      this._gridGap = gap
+    }
   }
 
-  Grid.prototype.gridColor = ["#B5B5B5", "#FF845E", "#CCFF00"];
-  Grid.prototype.gridRadius = 24;
-  Grid.prototype.gridGap = 6;
+
 
   /**
    * Cat 
@@ -306,14 +328,39 @@
 
       return gameGrids
     }
+
+    get gameGridsRowCount() {
+      return 9;
+    }
+
+    get gameGridsColCount() {
+      return 9;
+    }
+
+    _gameCanvasWidth = 0
+
+    get gameCanvasWidth() {
+      return this._gameCanvasWidth;
+    }
+
+    set gameCanvasWidth(width) {
+      this._gameCanvasWidth = width
+    }
+
+    _gameCanvasHeight = 0
+
+    get gameCanvasHeight() {
+      return this._gameCanvasHeight;
+    }
+
+    set gameCanvasHeight(height) {
+      this._gameCanvasHeight = height
+    }
+
+    get gameBarriersCount() {
+      return 6;
+    }
   }
-
-  Game.prototype.gameGridsRowCount = 9;
-  Game.prototype.gameGridsColCount = 9;
-  Game.prototype.gameCanvasWidth = 0;
-  Game.prototype.gameCanvasHeight = 0;
-  Game.prototype.gameBarriersCount = 6;
-
 
   // game global init config
 
@@ -332,12 +379,12 @@
   let searchDepth
 
   /**
- * judge click target point is in path
- * @param {*} x 
- * @param {*} y 
- * @param {*} grid 
- * @returns 
- */
+  * judge click target point is in path
+  * @param {*} x 
+  * @param {*} y 
+  * @param {*} grid 
+  * @returns 
+  */
   function isInPath(x, y, grid) {
 
     context.beginPath();

@@ -1,6 +1,6 @@
 {
   "name": "crazy-cat",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -12,5 +12,8 @@
   },
   "dependencies": {
     "less": "^4.1.2"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
